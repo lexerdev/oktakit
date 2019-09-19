@@ -39,13 +39,17 @@ module Oktakit
       super(build_error_message)
     end
 
+    def headers
+      @headers ||= @response[:response_headers]
+    end
+
     # Array of validation errors
     # @return [Array<Hash>] Error info
     def errors
       if data && data.is_a?(Hash)
         data
       else
-	{}
+        {}
       end
     end
 
@@ -60,7 +64,6 @@ module Oktakit
       return if body.empty?
       return body unless body.is_a?(String)
 
-      headers = @response[:response_headers]
       content_type = headers && headers['content-type'] || ''
       if content_type == 'application/json'
         Sawyer::Agent.serializer.decode(body)
