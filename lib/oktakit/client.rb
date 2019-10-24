@@ -66,7 +66,8 @@ module Oktakit
         data: options
       }
 
-      resp, next_page = request :get, url, **request_options
+      resp = request :get, url, **request_options
+      next_page = resp.rels[:next]
 
       # If request succeeded and we should paginate, then automatically traverse all next_pages
       if resp.status == 200 && should_paginate
@@ -80,7 +81,7 @@ module Oktakit
         resp = all_objs.flatten
       end
 
-      [resp]
+      resp
     end
 
     # Make a HTTP POST request
@@ -172,9 +173,10 @@ module Oktakit
       uri = URI::DEFAULT_PARSER.escape("/api/v1" + path.to_s)
       @last_response = resp = sawyer_agent.call(method, uri, data, options)
 
-      response = [resp]
-      response << absolute_to_relative_url(resp.rels[:next]) if paginate
-      response
+      if paginate
+        resp.rels[:next] = absolute_to_relative_url(resp.rels[:next])
+      end
+      resp
     end
 
     def sawyer_agent
